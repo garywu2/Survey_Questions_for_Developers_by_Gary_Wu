@@ -1,0 +1,116 @@
+This program will 
+
+1. Check for the presence of tube in gripper and if it exists, move it to empty slot in Carousel 
+2. Check for the presence of tube in analyzer and if it exists, move it to empty slot in Carousel 
+3. Go to first position in Carousel
+4. If Carousel Slot has test tube, move tube from Carousel to analyzer
+5. Wait until tube is being done analyzed
+6. Take tube out of analyzer and grab new one from Carousel
+7. Go back to step 3 until all slots in Carousel have been cycled through
+
+
+while(AutoSampler.on == 1) {
+	returnTubeIfExistsInAnalyzer();
+	returnTubeIfExistsInGripper();
+	for(int i = 0; i < carouselSlots; i++) {
+		if(carouselSlot[i].getSensor() == 1) {
+			takeTubeFromCarouselSlot(carouselSlot[i].location);
+        		moveTubeToAnalyzer(); 
+        		conductAnalysis();
+        		takeTubeFromAnalyzer();
+        		placeTestTubeInCarouselSlot(carouselSlot[i].location); 
+		}
+	}
+}
+
+void returnTubeIfExistsInAnalyzer() {
+	if(analyzer.sensorValue == 1) {
+		getTestTubeFromAnalyzer();
+		for(int i = 0; i < carouselSlots; i++) {
+			if(carouselSlot[i].getSensor() == 0) {
+				placeTestTubeInCarouselSlot(carouselSlot[i]);
+				return;
+			}
+		}
+	}
+}
+
+void returnTubeIfExistsInGripper() {
+	if(gripper.sensorValue == 1) {
+		for(int i = 0; i < carouselSlots; i++) {
+			if(carouselSlot[i].getSensor() == 0) {
+				placeTestTubeInCarouselSlot(carouselSlot[i]);
+				return;
+			}
+		}
+	}
+}
+
+void placeTestTubeInCarouselSlot(String location) {
+	moveGripperToLocation(location); //Assumed to be a hardware function
+	lowerGripper();
+	loosenPincher(); //hardware Function
+	raiseGripper();
+}
+
+void takeTubeFromCarouselSlot(String location) {
+	moveGripperToLocation(location); //Assumed to be a hardware function
+	lowerGripper();
+	//I assume that 1 cm is how much of the test tube the gripper has to hold
+	lowerGripperBy1cm(); //Hardware Function
+	tightenPincher(); //Hardware Function
+	raiseGripper();
+}
+
+void raiseGripper() {
+	while(gripper.topSensor != 1) {
+		raiseGripperBy1mm(); //Hardware Function
+	}
+}
+
+void lowerGripper() {
+	while(gripper.getBottomSensor() != 1) {
+		lowerGripperBy1mm(); //Hardware Function
+	}
+}
+
+void moveTubeToAnalyzer() {
+	moveGripperToLocation(Analyzer.getLocation()); //Assumed to be a hardware function
+	lowerGripper()
+	loosenPincher(); //Hardware Function
+	raiseGripper();
+}
+
+void conductAnalysis() {
+	while(Analyzer.doneAnalysis == false) {
+		waitTime(); //Hardware Function
+	}
+}
+
+void takeTubeFromAnalyzer() {
+	moveGripperToLocation(Analyzer.getLocation()); //Assumed to be a hardware function
+	lowerGripper();
+	//I assume that 1 cm is how much of the test tube the gripper has to hold
+	lowerGripperBy1cm(); //Hardware Function
+	tightenPincher(); //Hardware Function
+	raiseGripper();
+}
+
+class Carousel {
+	//This class will have the carousel that has slots with 
+	//test tubes in each slot (eg. ArrayList where last element
+	// points to first element).  Each slot will have a sensor telling 
+	//whether a test tube is in it or not and the slots location
+}
+
+class Analyzer {
+	//This class would have the status of the analyzer and 
+	//tell us if there was a test tube inside of it
+}
+
+class Gripper {
+	//The gripper class would have all the hardware functions 
+	//Needed to move the gripper
+}
+
+
